@@ -1,12 +1,12 @@
 /*********************************************************************************
-*  WEB322 – Assignment 2
+*  WEB322 – Assignment 3
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
 *  No part of this assignment has been copied manually or electronically from any other source
 *  (including web sites) or distributed to other students.
 * 
-*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO Student ID: 147891204 Date: 20/01/2022
+*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO Student ID: 147891204 Date: 05/02/2022
 *
-*  Online (Heroku) URL: https://young-harbor-17894.herokuapp.com/
+*  Online (Heroku) URL: https://radiant-fortress-88225.herokuapp.com/about
 *
 ********************************************************************************/ 
 //export to server.js
@@ -79,3 +79,47 @@ module.exports.getCategories = function (){
             reject();
         }
      })}
+
+     module.exports.addPost = (postData) => {
+        return new Promise((resolve, reject) => {
+            //o	If postData.published is undefined, explicitly set it to false, otherwise set it to true (this gets around the issue of the checkbox not sending "false" if it's unchecked)
+            postData.published = (postData.published) ? true : false;
+            postData.id = (posts.length + 1);
+            posts.push(postData);
+            //o	Push the updated PostData object onto the "posts" array and resolve the promise with the updated postData value (ie: the newly added blog post).
+            resolve(posts[posts.length - 1]);
+        });
+    }
+       //•	This function will provide an array of "post" objects whose category property matches the category parameter 
+    module.exports.getPostsByCategory = (category) => { 
+        return new Promise((resolve, reject) => {
+            let postfilter = posts.filter(a => a.category == category);
+            if (postfilter.length == 0) {
+                reject("no results returned"); return;
+            } 
+           resolve(postfilter);     
+        })
+    };
+    //•	This function will provide an array of "post" objects whose postDate property represents a Date 
+    module.exports.getPostsByMinDate = (minDateStr) => {
+        return new Promise((resolve, reject) => {
+            let filterdate = posts.filter(a => new Date(a.postDate) > new Date(minDateStr));
+           
+            if (filterdate.length == 0) {
+                reject("no results returned"); return;
+            } 
+            resolve(filterdate);
+        });
+    }
+    //	This function will provide a single "post" object whose id property matches the id parameter 
+    module.exports.getPostById = (id) => {
+        return new Promise((resolve, reject) => {
+            let filterbyID = posts.filter(a => a.id == id);
+            
+            if (filterbyID.length == 0) {
+                reject("no results returned"); return;
+            } 
+           resolve(filterbyID);     
+        })
+    }
+    
