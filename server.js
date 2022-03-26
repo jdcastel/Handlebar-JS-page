@@ -130,6 +130,37 @@ app.get('/blog', async (req, res) => {
 
 });
 
+
+app.get("/categories/add", (req, res) => {
+    res.render(path.join(__dirname, "/views/addCategory.hbs"));
+});
+
+app.post("/categories/add", (req, res) => {
+    blogService.addCategory(req.body).then(() => {
+        res.redirect("/categories");
+    })
+});
+
+app.get("/categories/delete/:id", (req, res) => {
+    blogService.deleteCategoryById(req.params.id)
+    .then(() => {
+        res.redirect("/categories");
+    }).catch(err => {
+        res.status(500).send("Unable to Remove Category / Category not found");
+        console.log(err);
+    });
+});
+
+app.get("/posts/delete/:id", (req, res) => {
+    blogService.deletePostById(req.params.id)
+    .then(() => {
+        res.redirect("/posts");
+    }).catch(err => {
+        res.status(500).send("Unable to Remove Post / Post not found");
+        console.log(err);
+    });
+});
+
 app.get("/posts", (req, res) => {
     let category = req.query.category;
     let minDate = req.query.minDate;
@@ -298,36 +329,6 @@ app.use((req, res) => {
     res.render("blog", { data: viewData })
 });
 
-
-app.get("/categories/add", (req, res) => {
-    res.render(path.join(__dirname, "/views/addCategory.hbs"));
-});
-
-app.post("/categories/add", (req, res) => {
-    blogService.addCategory(req.body).then(() => {
-        res.redirect("/categories");
-    })
-});
-
-app.get("/categories/delete/:id", (req, res) => {
-    blogService.deleteCategoryById(req.params.id)
-    .then(() => {
-        res.redirect("/categories");
-    }).catch(err => {
-        res.status(500).send("Unable to Remove Category / Category not found");
-        console.log(err);
-    });
-});
-
-app.get("/posts/delete/:id", (req, res) => {
-    blogService.deletePostById(req.params.id)
-    .then(() => {
-        res.redirect("/posts");
-    }).catch(err => {
-        res.status(500).send("Unable to Remove Post / Post not found");
-        console.log(err);
-    });
-});
 
 // setup http server to listen on HTTP_PORT
 // app.listen(HTTP_PORT);
