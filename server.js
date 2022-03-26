@@ -29,6 +29,7 @@ const { rmSync } = require("fs");
 const stripJs = require('strip-js');
 //middleware
 app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
 app.set("view engine", ".hbs");
 
 app.engine(".hbs", exphbs.engine({ 
