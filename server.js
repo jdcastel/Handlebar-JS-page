@@ -24,8 +24,6 @@ const exphbs = require("express-handlebars");
 const path = require("path");
 
 const blogService = require('./blog-service.js');
-const posts = require("./data/posts.json");
-const categories = require("./data/categories.json");
 const blogData = require("./blog-service");
 const { rmSync } = require("fs");
 const stripJs = require('strip-js');
@@ -56,20 +54,20 @@ app.engine(".hbs", exphbs.engine({
     }
 }));
 
-app.use(function(req,res,next){
+app.use(function (req, res, next) {
     let route = req.path.substring(1);
     app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
     app.locals.viewingCategory = req.query.category;
     next();
-   });
+});
 //The route "/" must redirect the user to the "/about"
 app.get("/", (req, res) => {
     res.redirect('/blog');
 });
 
-app.get('/about', function(req, res){ 
-    res.render(__dirname +"/views/about.hbs");
-}); 
+app.get("/about", (req, res) => {
+    res.render(path.join(__dirname, "/views/about.hbs"));
+});
 
 // app.get('/blog', function(req, res){ 
 //     blogService.getPublishedPosts().then(
@@ -126,28 +124,37 @@ app.get('/blog', async (req, res) => {
 });
 
 app.get("/posts", (req, res) => {
-    let categoryData = req.query.category;
+    let category = req.query.category;
     let minDate = req.query.minDate;
 
-    if (categoryData) {
-        blogService.getPostsByCategory(categoryData).then(data => {
-            res.render("posts", {posts: data})      
-        }).catch(err=>{
-            res.render("posts", {message: "no results"});
-        });
+    if (category) {
+        blogservice.getPostsByCategory(category).then(data => {
+            if (data.length > 0) {
+                res.render("posts", { posts: data });
+            }
+            else {
+                res.render("posts", { message: "no results" });
+            }
+        })
     }
     else if (minDate != "" && minDate != null) {
-        blogService.getPostsByMinDate(minDate).then(data => {
-            res.render("posts", {posts: data})     
-        }).catch(err=>{
-            res.render("posts", {message: "no results"});
-        });
+        blogservice.getPostsByMinDate(minDate).then(data => {
+            if (data.length > 0) {
+                res.render("posts", { posts: data });
+            }
+            else {
+                res.render("posts", { message: "no results" });
+            }
+        })
     }
     else {
-        blogService.getAllPosts().then(data => {
-            res.render("posts", {posts: data})     
-        }).catch(err=>{
-            res.render("posts", {message: "no results"});
+        blogservice.getAllPosts().then(data => {
+            if (data.length > 0) {
+                res.render("posts", { posts: data });
+            }
+            else {
+                res.render("posts", { message: "no results" });
+            }
         })
     }
 });
@@ -158,10 +165,13 @@ app.get("/posts", (req, res) => {
 // });
 
 app.get("/categories", (req, res) => {
-    blogService.getCategories().then(data => {
-        res.render("categories", {categories: data})  
-    }).catch(err => {
-        res.render("categories", {message: "no results"});
+    blogservice.getCategories().then(data => {
+        if (data.length > 0) {
+            res.render("categories", { categories: data });
+        }
+        else {
+            res.render("categories", { message: "no results" });
+        }
     })
 });
 //
@@ -192,7 +202,6 @@ app.post('/posts/add', upload.single("featureImage"), (req, res) => {
                 streamifier.createReadStream(req.file.buffer).pipe(streamUpload);
             });
         };
-
         async function upload(req) {
             let x = await streamUpload(req);
             return x;
@@ -276,6 +285,36 @@ app.use((req, res) => {
 
     // render the "blog" view with all of the data (viewData)
     res.render("blog", {data: viewData})
+});
+
+app.get("/categories/add", (req, res) => {
+    res.render(path.join(__dirname, "/views/addCategory.hbs"));
+});
+
+app.post("/categories/add", (req, res) => {
+    blogservice.addCategory(req.body).then(() => {
+        res.redirect("/categories");
+    })
+});
+
+app.get("/categories/delete/:id", (req, res) => {
+    blogservice.deleteCategoryById(req.params.id)
+    .then(() => {
+        res.redirect("/categories");
+    }).catch(err => {
+        res.status(500).send("Unable to Remove Category / Category not found");
+        console.log(err);
+    });
+});
+
+app.get("/posts/delete/:id", (req, res) => {
+    blogservice.deletePostById(req.params.id)
+    .then(() => {
+        res.redirect("/posts");
+    }).catch(err => {
+        res.status(500).send("Unable to Remove Post / Post not found");
+        console.log(err);
+    });
 });
 
 // setup http server to listen on HTTP_PORT
