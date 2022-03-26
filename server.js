@@ -129,7 +129,7 @@ app.get("/posts", (req, res) => {
     let minDate = req.query.minDate;
 
     if (category) {
-        blogservice.getPostsByCategory(category).then(data => {
+        blogService.getPostsByCategory(category).then(data => {
             if (data.length > 0) {
                 res.render("posts", { posts: data });
             }
@@ -139,7 +139,7 @@ app.get("/posts", (req, res) => {
         })
     }
     else if (minDate != "" && minDate != null) {
-        blogservice.getPostsByMinDate(minDate).then(data => {
+        blogService.getPostsByMinDate(minDate).then(data => {
             if (data.length > 0) {
                 res.render("posts", { posts: data });
             }
@@ -149,7 +149,7 @@ app.get("/posts", (req, res) => {
         })
     }
     else {
-        blogservice.getAllPosts().then(data => {
+        blogService.getAllPosts().then(data => {
             if (data.length > 0) {
                 res.render("posts", { posts: data });
             }
@@ -166,7 +166,7 @@ app.get("/posts", (req, res) => {
 // });
 
 app.get("/categories", (req, res) => {
-    blogservice.getCategories().then(data => {
+    blogService.getCategories().then(data => {
         if (data.length > 0) {
             res.render("categories", { categories: data });
         }
@@ -293,13 +293,13 @@ app.get("/categories/add", (req, res) => {
 });
 
 app.post("/categories/add", (req, res) => {
-    blogservice.addCategory(req.body).then(() => {
+    blogService.addCategory(req.body).then(() => {
         res.redirect("/categories");
     })
 });
 
 app.get("/categories/delete/:id", (req, res) => {
-    blogservice.deleteCategoryById(req.params.id)
+    blogService.deleteCategoryById(req.params.id)
     .then(() => {
         res.redirect("/categories");
     }).catch(err => {
@@ -309,7 +309,7 @@ app.get("/categories/delete/:id", (req, res) => {
 });
 
 app.get("/posts/delete/:id", (req, res) => {
-    blogservice.deletePostById(req.params.id)
+    blogService.deletePostById(req.params.id)
     .then(() => {
         res.redirect("/posts");
     }).catch(err => {
