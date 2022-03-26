@@ -1,10 +1,10 @@
 /*********************************************************************************
-*  WEB322 – Assignment 4
+*  WEB322 – Assignment 5
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
 *  No part of this assignment has been copied manually or electronically from any other source
 *  (including web sites) or distributed to other students.
 * 
-*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO Student ID: 147891204 Date: 7/03/2022
+*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO Student ID: 147891204 Date: 24/03/2022
 *
 *  Online (Heroku) URL: https://radiant-fortress-88225.herokuapp.com
 *
@@ -195,7 +195,7 @@ module.exports.getCategories = function () {
             }
             Category.create(categoryData)
             .then(resolve())
-            .catch(reject('unable to create category'))
+            .catch(reject('error creating category'))
         });
     };
 
@@ -206,7 +206,7 @@ module.exports.getCategories = function () {
                     id: id
                 } })
             .then(resolve())
-            .catch(reject('unable to delete category'))
+            .catch(reject('error removing category'))
         })
     };
 
@@ -218,7 +218,7 @@ module.exports.getCategories = function () {
             .then(() => {
                 resolve() })
             .catch(() => {
-                reject('unable to delete post') })
+                reject('error removing post') })
         })
     };
     

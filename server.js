@@ -1,10 +1,10 @@
 /*********************************************************************************
-*  WEB322 – Assignment 4
+*  WEB322 – Assignment 5
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
 *  No part of this assignment has been copied manually or electronically from any other source
 *  (including web sites) or distributed to other students.
 * 
-*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO Student ID: 147891204 Date: 07/03/2022
+*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO Student ID: 147891204 Date: 24/03/2022
 *
 *  Online (Heroku) URL: https://radiant-fortress-88225.herokuapp.com
 *
@@ -51,7 +51,12 @@ app.engine(".hbs", exphbs.engine({
         },
         safeHTML: function(context){
             return stripJs(context);
-           }  
+           },
+        formatDate: function (dateObj) {
+        let year = dateObj.getFullYear();
+        let month = (dateObj.getMonth() + 1).toString();            let day = dateObj.getDate().toString();
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
     }
 }));
 
@@ -69,6 +74,7 @@ app.get("/", (req, res) => {
 app.get("/about", (req, res) => {
     res.render(path.join(__dirname, "/views/about.hbs"));
 });
+
 
 // app.get('/blog', function(req, res){ 
 //     blogService.getPublishedPosts().then(
@@ -177,7 +183,11 @@ app.get("/categories", (req, res) => {
 });
 //
 app.get("/posts/add", (req, res) => {
-    res.render(path.join(__dirname, "/views/addPost.hbs"));
+    blogService.getCategories()
+    .then(data => res.render("addPost", {categories: data}))
+    .catch(err => {
+        res.render("addPost", {categories: []})
+    });    
 });
 
 cloudinary.config({
@@ -191,21 +201,22 @@ app.post('/posts/add', upload.single("featureImage"), (req, res) => {
     if (req.file) {
         let streamUpload = (req) => {
             return new Promise((resolve, reject) => {
-                let streamUpload = cloudinary.uploader.upload_stream(
-                    (err, result) => {
+                let stream = cloudinary.uploader.upload_stream(
+                    (error, result) => {
                         if (result) {
                             resolve(result);
                         } else {
-                            reject(err);
+                            reject(error);
                         }
                     }
                 );
-                streamifier.createReadStream(req.file.buffer).pipe(streamUpload);
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
             });
         };
         async function upload(req) {
-            let x = await streamUpload(req);
-            return x;
+            let result = await streamUpload(req);
+            console.log(result);
+            return result;
         }
         upload(req).then((uploaded) => {
             processPost(uploaded.url);
@@ -213,23 +224,21 @@ app.post('/posts/add', upload.single("featureImage"), (req, res) => {
     } else {
         processPost("");
     }
-
     function processPost(imageUrl) {
         req.body.featureImage = imageUrl;
-        // TODO: Process the req.body and add it as a new Blog Post before redirecting to /posts
         blogService.addPost(req.body).then(() => {
             res.redirect("/posts");
         }).catch(err => {
-            res.status(404).send(err);
+            res.status(500).send(err);
         })
     }
 });
 
 app.get('/post/:value', (req, res) => {
     blogService.getPostById(req.params.value).then((data) => {
-        res.render("post", {post: data})
+        res.render("post", { post: data })
     }).catch(err => {
-        res.render("post", {message: "no results"});
+        res.render("post", { message: "no results" });
     });
 });
 
@@ -243,50 +252,52 @@ app.use((req, res) => {
     // Declare an object to store properties for the view
     let viewData = {};
 
-    try{
+    try {
 
         // declare empty array to hold "post" objects
         let posts = [];
 
         // if there's a "category" query, filter the returned posts by category
-        if(req.query.category){
+        if (req.query.category) {
             // Obtain the published "posts" by category
             posts = await blogData.getPublishedPostsByCategory(req.query.category);
-        }else{
+        } else {
             // Obtain the published "posts"
             posts = await blogData.getPublishedPosts();
         }
 
         // sort the published posts by postDate
-        posts.sort((a,b) => new Date(b.postDate) - new Date(a.postDate));
+        posts.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
 
         // store the "posts" and "post" data in the viewData object (to be passed to the view)
         viewData.posts = posts;
 
-    }catch(err){
+    } catch (err) {
         viewData.message = "no results";
     }
 
-    try{
+    try {
         // Obtain the post by "id"
         viewData.post = await blogData.getPostById(req.params.id);
-    }catch(err){
-        viewData.message = "no results"; 
+        console.log(viewData.post)
+    } catch (err) {
+        viewData.message = "no results";
     }
 
-    try{
+    try {
         // Obtain the full list of "categories"
         let categories = await blogData.getCategories();
 
         // store the "categories" data in the viewData object (to be passed to the view)
         viewData.categories = categories;
-    }catch(err){
+    } catch (err) {
         viewData.categoriesMessage = "no results"
     }
 
     // render the "blog" view with all of the data (viewData)
-    res.render("blog", {data: viewData})
+    res.render("blog", { data: viewData })
 });
+
 
 app.get("/categories/add", (req, res) => {
     res.render(path.join(__dirname, "/views/addCategory.hbs"));
