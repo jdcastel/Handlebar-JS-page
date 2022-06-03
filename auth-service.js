@@ -1,3 +1,7 @@
+/*********************************************************************************
+*  Name: JUAN DAVID RODRIGUEZ CASTELBLANCO 
+*  Online (Heroku) URL: https://whispering-waters-31442.herokuapp.com/
+********************************************************************************/ 
 const mongoose = require("mongoose");
 const bcrypt = require('bcryptjs');
 
